@@ -147,7 +147,7 @@ ibmcloud cf push
 - Ensure that the application is deployed to IBM Cloud successfully. If you see any errors in logs, fix them and redeploy the application.
 
 
-## 6. Run the application
+## 5. Run the application
 - [Login](https://console.bluemix.net/) to IBM Cloud and go to dashboard. The application you deployed should show up and it should be in running state.
 - Click on the application and again click on `Visit App URL`.
 
@@ -204,7 +204,46 @@ Legend for above image
 13. Message sent to Agent Bot.
 14. Response from Agent Bot (end of conversation).
 
-
+## 6. Improving the Bots
+Currently, each bot is configured to use keywords in order to determine a user's meaning. While this approach makes it easy to get started, it doesn't take full advantage of the machine learning capabilities of Watson Assistant. As a result, the bots won't be able to infer meaning if none of the keywords exist in the user's input. This could also lead to some unintended results!
+### 6.1 Test agentBot
+- Go to the Watson Assistant `Skills` tab and click on `agentBot`
+![SkillsTabAgentBot](images/SkillsTabAgentBot.png)
+- To test **agentBot* click on the `Try it` button in the upper right hand corner of the screen.
+![AgentBotTryIt](images/AgentBotTryIt.png)
+- You can use the `Try it` panel to send messages to `agentBot` and see what `intents` and `entities` are recognized. `Intents` are sentence level classifications while `Entitites` are phrase level classifications.
+- Send the sentence: "book a cab".  `agentBot` will recognize the `#travel` intent. When `agentBot` finds the `#travel` intent, it signals a transfer to `travelBot`.
+![AgentBotBookFlight](images/agent_bot_book_cab.png)
+- Send the sentence: "I want a cab". `agentBot` will not recognize the `#travel` intent, because the `#travel` intent is trained on keywords relating to travel.
+![AgentBotWantFlight](images/agent_bot_i_want_cab.png)
+- Send the sentence: "get". `agentBot` recognizes the `#travel` intent, even though `get` is NOT part of our examples for `#travel`.  
+![AgentBotGet](images/agent_bot_get.png)
+### 6.2 Improve agentBot
+- Within the `agentBot` skill, click the `Intents` tab and click the `#travel` intent to open up `intent details`.
+![AgentBotTravelIntent](images/agent_bot_travel_intent.png)
+- Within the `intent details` for the `#travel` intent, we can see that the `user examples`(training data) doesn't include mentions of `flight`, `cab`, or `taxi`. Since the current set of user examples are all keywords, the underlying model is weighted towards short phrases and the specific set of keywords. Since flight isn't listed as an example, "I want a flight" wasn't classified as `#travel`. This could also explain why "get" was incorrectly classified as `#travel`.  
+![AgentBotTravelIntentDetails](images/agent_bot_travel_details.png)
+- Add the following examples to the `#travel` intent of the `agentBot` skill. Since `agentBot` serves as a proxy to `travelBot`, keyword intents will suffice.
+  1. `cab`
+  2. `taxi`
+  3. `flight`
+- As you add examples, the `Try it out` panel will update to show that your workspace training is being updated  
+![BotTraining](images/wa_training.png)
+- Once the `Watson is training` notification has disappeared, use the `Try it out` panel to send the sentences: `I want a cab` and `Get me a flight`. Both sentences should be correctly classified as `#travel`.
+### 6.3 Teach travelBot to Fly
+Now that `agentBot` is better able to handle requests for travel, we need to ensure that `travelBot` can handle flight requests.
+- From the Watson Assistant `Skills` menu, select the `travelBot` skill.
+- Click on the `Dialog` tab of the `travelBot` skill to access the logic of `travelBot`. 
+- Using the `Try it out` panel, send the message: "I want to book a flight". `travelBot` should classify the message as `#reserve` and should identify the entity of `@mode_of_transportation:flight`. 
+- We will duplicate the the `Book Cab` node to enable `travelBot` to arrange flight reservations. Click the ![TripleDotMenu](images/triple_dot.png) on the `Book Cab` dialog node then click `Duplicate`.  
+![DuplicateBookCab](images/travel_bot_duplicate_book_cab.png)
+- The resulting node will be called `Book Cab - copy1`
+![TravelBotBookCabCopy](images/travel_bot_book_cab_copy1.png)
+- Click on the `Book Cab - copy` node and change it's name from `Book Cab - copy` to `Book Flight`. To ensure that the node is activated when users ask about reserving flights, change its trigger condition from `#reserve and @mode_of_transportation:cab` to `#reserve and @mode_of_transportation:flight`. This set of conditions will ensure that the node triggers whenever the `#reserve` intent is detected alongside the `@mode_of_transportation` entity with a value of `flight`.  
+![TravelBotBookFlight](images/travel_bot_book_flight.png)
+- Update the `If not present, ask` prompts for `$cabRequiredDate` and `$cabRequiredTime` to mention flight instead of cab. 
+- Update the `Book Flight` node's response to `Sure $cabPersonName, your flight has been booked for $cabRequiredDate and you will be picked up from $cabPickuplocation at $cabRequiredTime`. 
+- Use the try it out panel to request a flight reservation.
 # Plug and play process for a new bot
 
 1. To add a new bot, create a new bot in the Watson Assistant service instance created earlier for this code pattern or you can use an existing bot that you want to use. Let's say you added a bot for `Restaurant Booking` and named it as `RESTAURANT_BOOKING`.
