@@ -32,8 +32,8 @@ When the reader has completed this Code Pattern, they will understand how to:
 
 ![Architecture](images/architecture.png)
 
-1. User accesses web application and types in a message. Nodejs application, an orchestration later, sends user message to agent bot
-2. Agent bot determines the intent of the message and responds with the specific bot details, to which the message needs to be redirected.
+1. User accesses web application and types in a message. Nodejs application, an orchestration layer, sends user message to agent bot
+2. Agent bot determines the intent of the message and responds with details about the specific bot to which the message needs to be redirected.
 3. Node.js application sends message to the specific bot (Weather Bot, in this case). Specific bot responds. Conversation continues between user and specific bot.
 4. When the conversation with specific bot is over, user message is then sent to agent bot to determine the intent.
 5. Node.js application sends message to the specific bot (Travel Bot, in this case). Specific bot responds. Conversation continues between user and specific bot.
@@ -51,6 +51,7 @@ When the reader has completed this Code Pattern, they will understand how to:
 
 ## 1. Clone git repo
 
+- Navigate to the folder you'd like to store this demo repository (e.g. `Documents`)
 - On command prompt run the below command to clone the git repo.
 ```
 git clone git@github.com:IBM/watson-assistant-multi-bot-agent.git
@@ -66,14 +67,16 @@ run `cd watson-assistant-multi-bot-agent` to change directory to project parent 
 
 ### 2.1 Create Watson Assistant service instance
 - Click this [link](https://console.bluemix.net/catalog/services/watson-assistant-formerly-conversation) to create Watson assistant service.
-- Enter the service name as `wbc-Watson Assistant (formerly Conversation)-bots`. You can choose to enter any name you like.
-- Ensure you select the right region, organisation and space.
+- You can choose to enter any name you like under `Service Name`, such as `Watson-Assistant-Service`. 
+- Feel free to use the default region/location, `Dallas`, and use the default resource group. 
 - Under `Pricing Plans`, select `Lite` plan.
 - Click `Create`.
-- Watson Asistant service instance should get created.
+- Watson Assistant service instance should get created.
 
 ### 2.2 Import bots
-- Go to IBM Cloud dashboard and click on the Watson Assistant service instance created in above steps.
+- If you are not redirected to the Watson Assistant service you just made, navigate to service by following these steps:
+    - Go to the IBM Cloud dashboard (the home page)
+    - click on the Watson Assistant service instance created in above steps, in `Services`.
 - On the Assistant Dashboard, click `Launch Tool`.
 
 ![LaunchTool](images/launch_tool.png)
@@ -88,22 +91,24 @@ run `cd watson-assistant-multi-bot-agent` to change directory to project parent 
 ![ImportSkill](images/ImportSkill.png)
 
 - Click on `Choose JSON file`.
-- Browse to the cloned repository parent folder -> WA.
+- In your file explorer, navigate to the cloned repository parent folder, `watson-assistant-multi-bot-agent`
+- Browse to folder `WA`.
 - Select `agent-bot.json` and click `Open`.
 - Select the option `Everything (Intents, Entities, and Dialog)`.
 
 ![ImportAWorkspace](images/import_a_workspace.png)
 
 - Click `Import` button.
-- Repeat above steps in section [Import bots](#22-import-bots) to import `travel_bot.json` and `weather_bot.json`.
+- Navigate back to the `Skills` page to repeat above steps in section [Import bots](#22-import-bots) to import `travel_bot.json` and `weather_bot.json`.
 
 ## 3. Configure application with bots details
 
 ### 3.1 Gather required details
 
-- Go to IBM Cloud dashboard and click on the Watson Assistant service instance.
-- On the Assistant Dashboard, click `Launch Tool`.
-- Click `Skills` tab.
+- If not already in the `Skills` page of the your Watson Assistance service instance,
+    - Go back to the IBM Cloud dashboard and click on the Watson Assistant service instance again
+    - On the Assistant Dashboard, click `Launch Tool`.
+    - Click `Skills` tab.
 
 ![SkillsTab](images/SkillsTab.png)
 
@@ -112,32 +117,32 @@ run `cd watson-assistant-multi-bot-agent` to change directory to project parent 
 ![BotActions](images/bot_actions.png)
 
 - Click `View API Details`.
-- Copy and save `Workspace ID` for later use.
-- Repeat above steps in section [Configure application with bots details](#3-configure-application-with-bots-details) for all the other bots also.
+- Copy and save `Workspace ID` for in a text file for later use, along with a note about which bot it came from.
+- Repeat above steps for all the other bots as well. You should end up 3 workspace IDs, one for each bot (Agent, Weather, and Travel)
 
-- Go to IBM Cloud dashboard and click on the Watson Assistant service instance.
+- Go back to your Watson Assistance Service instance (back on `cloud.ibm.com`)
 - Copy `API Key` and `Url` using the copy buttons as shown in below image or using the `Show Credentials` and copying the field contents. Save them in a text file for later use.
 ![CopyAPIKeyAndUrl](images/CopyAPIKeyAndUrl.png)
 
 
 ### 3.2 Update manifest.yml file with the details gathered
 
-- Under project parent folder, open `manifest.yml` file for editing.
+- Back in the `watson-assistant-multi-bot-agent` project parent folder, open `manifest.yml` file in a text editor
 - Update `ASSISTANT_IAM_API_KEY` with Watson Assistant service instance's API Key as noted in section [Gather required details](#31-gather-required-details)
 - Update `ASSISTANT_IAM_URL` with Watson Assistant service instance's Url as noted in section [Gather required details](#31-gather-required-details)
 - Update `WORKSPACE_ID_AGENT`, `WORKSPACE_ID_TRAVEL`, `WORKSPACE_ID_WEATHER` with Workspace IDs of respective bots as noted in section [Gather required details](#31-gather-required-details)
 
-Updated `manifest.yml` file looks as below
+Updated `manifest.yml` file should look like the image below. Make sure to have a space after the colon. Save this file when completed.
 
 ![Manifest](images/manifest.png)
 
 
 ## 4. Deploy application to IBM Cloud
-- On command prompt, navigate to project parent folder
+- On command prompt, navigate to project parent folder `watson-assistant-multi-bot-agent`
 - On command prompt, login to IBM Cloud using `ibmcloud login` or `ibmcloud login --sso` (for federated login).
 - Ensure that you are in the right organisation, space and region using the below command.
 ```
-ibmcloud target
+ibmcloud target --cf
 ```
 - Run the below command to deploy the application to IBM Cloud.
 ```
@@ -145,11 +150,15 @@ ibmcloud cf push
 ```
 - Check the logs of the application using the command `ibmcloud cf logs <app_name> --recent`.
 - Ensure that the application is deployed to IBM Cloud successfully. If you see any errors in logs, fix them and redeploy the application.
+    - If the above steps don't work, try the following:
+    - Sign into us-south: `ibmcloud login -sso -a api.ng.bluemix.net`
+    - Set target: `ibmcloud target --cf`
+    - Try push :`ibmcloud cf push`
 
 
 ## 5. Run the application
 - [Login](https://console.bluemix.net/) to IBM Cloud and go to dashboard. The application you deployed should show up and it should be in running state.
-- Click on the application and again click on `Visit App URL`.
+- Click on the application and click on `Visit App URL`.
 
 ![VisitAppURL](images/visit_app_url.png)
 
@@ -157,14 +166,15 @@ ibmcloud cf push
 
 ![AppHomePage](images/app_home_page.png)
 
-- On command prompt monitor logs using the command
+- In command prompt, monitor logs using the command
 ```
 ibmcloud cf logs watson-assistant-multi-bot-agent
 ```
+* _Note: if the application fails to recognize your query, wait several minutes. Watson may still be training in the background._
 
 - On the application home page type a weather related query `What does the weather look like tomorrow?`.
 ![Query1](images/query_1.png)
-- Check the log files and notice that the message first goes to Agent Bot and then it is redirected to the Weather Bot.
+- Check the log files and notice that the message first goes to Agent Bot and then it is redirected to the Weather Bot. 
 ![AppLogs1](images/app_logs_1.png)
 - In the interface, you are asked to enter the location. Enter a location, e.g. `Bengaluru`.
 - Check the logs. Because the conversation with the Weather Bot has not ended, subsequent messages are sent to the Weather Bot itself, without the intervention of the Agent Bot.
@@ -223,7 +233,7 @@ Currently, each bot is configured to use keywords in order to determine a user's
 ![AgentBotTravelIntent](images/agent_bot_travel_intent.png)
 - Within the `intent details` for the `#travel` intent, we can see that the `user examples`(training data) doesn't include mentions of `flight`, `cab`, or `taxi`. Since the current set of user examples are all keywords, the underlying model is weighted towards short phrases and the specific set of keywords. Since flight isn't listed as an example, "I want a flight" wasn't classified as `#travel`. This could also explain why "get" was incorrectly classified as `#travel`.  
 ![AgentBotTravelIntentDetails](images/agent_bot_travel_details.png)
-- Add the following examples to the `#travel` intent of the `agentBot` skill. Since `agentBot` serves as a proxy to `travelBot`, keyword intents will suffice.
+- Add the following examples to the `#travel` intent of the `agentBot` skill under `Add user examples`. Since `agentBot` serves as a proxy to `travelBot`, keyword intents will suffice.
   1. `cab`
   2. `taxi`
   3. `flight`
@@ -241,9 +251,11 @@ Now that `agentBot` is better able to handle requests for travel, we need to ens
 ![TravelBotBookCabCopy](images/travel_bot_book_cab_copy1.png)
 - Click on the `Book Cab - copy` node and change it's name from `Book Cab - copy` to `Book Flight`. To ensure that the node is activated when users ask about reserving flights, change its trigger condition from `#reserve and @mode_of_transportation:cab` to `#reserve and @mode_of_transportation:flight`. This set of conditions will ensure that the node triggers whenever the `#reserve` intent is detected alongside the `@mode_of_transportation` entity with a value of `flight`.  
 ![TravelBotBookFlight](images/travel_bot_book_flight.png)
-- Update the `If not present, ask` prompts for `$cabRequiredDate` and `$cabRequiredTime` to mention flight instead of cab. 
-- Update the `Book Flight` node's response to `Sure $cabPersonName, your flight has been booked for $cabRequiredDate and you will be picked up from $cabPickuplocation at $cabRequiredTime`. 
-- Use the try it out panel to request a flight reservation.
+- Update the `If not present, ask` prompts for `$cabRequiredDate` and `$cabRequiredTime` to mention flight instead of cab. Update variable names from `$cabRequiredDate` and `$cabRequiredTime` to `$flightRequiredDate` and `$flightRequiredTime`
+- Update the `Book Flight` node's response to `Your flight has been booked for $flightRequiredDate and you will be picked up at $flightRequiredTime`. 
+![TravelBotBookFlightFinal](images/travel_bot_final_book_flight.png)
+- Use the try it out panel to request a flight reservation. You will need to provide a date and a time for your reservation.   
+![TravelBotBookFlightExample](images/travel_bot_book_flight_example.png)
 # Plug and play process for a new bot
 
 1. To add a new bot, create a new bot in the Watson Assistant service instance created earlier for this code pattern or you can use an existing bot that you want to use. Let's say you added a bot for `Restaurant Booking` and named it as `RESTAURANT_BOOKING`.
